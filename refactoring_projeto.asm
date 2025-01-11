@@ -286,12 +286,17 @@ identifica_parte:
                 _rotina_virgula_word_token:
                     # se for virgula, termina a leitura do dado atual
                     # além disso, aloca para o buffer de linha
+
+                    addi $sp, $sp, -1
+                    sb $zero, 0($sp)
+
                     move $s0, $t0 # mantém o ponteiro do buffer
-
                     
+                    add $sp, $sp, $t2  # libera a pilha e prepara para leitura
                     move $a0, $sp
-                    add $sp, $sp, $t2  # libera a pilha
 
+                    addi $sp, $sp, 1 # libera finalmente a pilha
+                    
                     jal ascii_to_decimal
 
                     move $a0, $v0 # recebe o valor em decimal do dado
@@ -348,10 +353,14 @@ identifica_parte:
                 _rotina_next_line_word:
                     # se for next line, termina a leitura do dado atual e continua o process lines
                     # além disso, aloca para o buffer de linha
-                    move $s0, $t0 # mantém o ponteiro do buffer
+                    addi $sp, $sp, -1
+                    sb $zero, 0($sp)
 
+                    move $s0, $t0 # mantém o ponteiro do buffer
+                    
+                    add $sp, $sp, $t2  # libera a pilha e prepara para leitura
                     move $a0, $sp
-                    add $sp, $sp, $t2  # libera a pilha
+                    addi $sp, $sp, 1 # libera finalmente a pilha
 
                     jal ascii_to_decimal
 
@@ -515,7 +524,7 @@ ascii_to_decimal:
         mflo $v0
         
         add $v0, $v0, $t1 # adiciona novo dígito
-        addi $t0, $t0, 1 # e continua o loop
+        addi $t0, $t0, -1 # e continua o loop
         j _convert_loop
         
     _convert_end:
