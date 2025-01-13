@@ -3,8 +3,8 @@
 filename: .space 128              # Espaço para o nome do arquivo
 buffer:   .space 1024             # Buffer para leitura do arquivo
 
-buffer_label: .space 64
-labels_space: .space 256
+buffer_nome_label: .space 64
+labels_space: .space 256 # Segue o seguinte modelo LABEL 0\:00000000 0\LABEL2 0\:000000001
 hex_chars: .asciiz "0123456789ABCDEF"
 hex_convert_buffer: .space 16
 
@@ -461,25 +461,41 @@ identifica_label:
         j _loop_identifica_label
 
     _fim_identifica_label:
+        move $t6, $t2 # mantém o tamanho da label
+        la $t1, buffer_nome_label
+        _loop_aloca_nome_buffer:
+        # carrega a label no buffer para analisar se é repetida
+            beqz $t2, _verifica_nome
+            lb $t0, ($sp)
+            sb $t0, ($t1)
+            addi $sp, $sp, 1
+            addi $t1, $t1, 1
+            addi $t2, $t2, -1 # decrementa o contador
+            j _loop_aloca_nome_buffer
+
         _verifica_nome:
+            addi $t1, $t1, 1
+            sb $zero, ($t1)
         
-
-
-            
+            la $a0, buffer_nome_label
+            move $a1, $t6
+            jal verifica_label
+            bgt $v0, -1, erro_label_repetida
+            la $t1, buffer_nome_label
         # $s3 aponta para o fim de Labels_space
         _aloca_nome:
-                beqz $t2, _fim_loop_aloca_nome
-                
-                lb $t0, ($sp)
-                sb $t0, ($s3)
-                addi $sp, $sp, 1
-                addi $s3, $s3, 1
-                addi $t2, $t2, -1 # decrementa o contador
-                j _aloca_nome
+            beqz $t6, _fim_loop_aloca_nome
+            
+            lb $t0, ($t1)
+            sb $zero, ($t1) # reseta o buffer de nome
+            sb $t0, ($s3)
+            addi $t1, $t1, 1
+            addi $s3, $s3, 1
+            addi $t6, $t6, -1 # decrementa o contador
+            j _aloca_nome
 
             _fim_loop_aloca_nome:
                 li $t0, ':'
-                addi $s3, $s3, 1
                 sb $t0, ($s3) # LABEL:
                 addi $s3, $s3, 1
                 la $a1, hex_convert_buffer
@@ -498,9 +514,11 @@ identifica_label:
         addi $a0, $a0, 1
         j process_lines
 
-
-
-
+erro_label_repetida:
+    li $v0, 4
+    la $a0, _erro_label_repetida
+    syscall
+    j exit_program
 
 ############################################################
 # função auxiliar compara strings
@@ -578,6 +596,62 @@ decimal_to_hex_ascii:
         j _hex_loop
     
     _hex_end:
+        jr $ra
+
+ascii_hex_to_decimal:
+    # recebe $a0 como endereço da string de Hex  
+    # retorna em $v0 o valor em decimal da conversão
+    
+    addi $sp, $sp, -8
+    sw $ra, 4($sp)
+    sw $s0, 0($sp)
+    
+    add $v0, $zero, $zero            # Initialize result
+    move $s0, $a0          # Salva o endereço
+    
+    _ascii_convert_loop:
+        lb $t0, ($s0)          
+        beqz $t0, _fim         # Verifica se já terminou
+        
+        add $t1, $zero, $zero              
+        
+        # Verifica se é um dígito
+        li $t1, '0'
+        blt $t0, $t1, _invalido
+        li $t1, '9'
+        ble $t0, $t1, _digito
+        
+        # Ou se é uma letra
+        li $t1, 'A'
+        blt $t0, $t1, _invalido
+        li $t1, 'F'
+        ble $t0, $t1, _letra
+
+        _digito:
+            sub $t2, $t0, '0'
+            j _continua
+
+        _letra:
+            sub $t2, $t0, 'A'
+            addi $t2, $t2, 10
+            j _continua
+
+        _continua:
+            sll $v0, $v0, 4        # move pra esquerda
+            add $v0, $v0, $t2      # adiciona o novo dígito
+            addi $s0, $s0, 1 # continua a conversão
+            j _ascii_convert_loop
+
+        _invalido: # se for um dígito inválido printa mensagem de erro
+            li $v0, 4             
+            la $a0, _erro_de_conversao
+            syscall
+            li $v0, -1             
+        
+    _fim:
+        lw $s0, 0($sp)         # desempilha 
+        lw $ra, 4($sp)
+        addi $sp, $sp, 8
         jr $ra
 
 aloca_str:
@@ -658,14 +732,42 @@ verifica_label:
     # Recebe em a1 o tamanho da label
     # Verifica se a label existe e retorna o número da memória
     # Se não existe, retorna -1 em $v0
+    addi $a1, $a1, 1 # adiciona mais um para comparar com o fim da label
+    move $t6, $a1 # mantém o tamanho da label
+    la $a1, labels_space
+    
     addi $sp, $sp, -4
     sw $ra, 0($sp)
 
-    move $a2, $a1
+    _loop_verifica_label:
 
-    lw $ra, 0($sp)
-    addi $sp, $sp, 4
-    jr $ra
+        move $a2, $t6
+        jal compara_str
+        bnez $v0, _fim_loop_verifica_label
+
+        _loop_procura_label:
+            addi $a1, $a1, 12 # pula o número de endereço da label, visto que ela não é igual a comparada
+            lb $t0, ($a1)
+            beqz $t0, _fim_loop_verifica_label # se 0 não tem mais label 
+            j _loop_verifica_label
+
+    _fim_loop_verifica_label:
+
+        beqz $v0, _label_nao_existe
+
+    _label_existe:
+        addi $a1, $a1, 3
+        move $a0, $a1
+        jal ascii_hex_to_decimal
+        j _fim_verifica_label
+        
+    _label_nao_existe:
+        li $v0, -1
+
+    _fim_verifica_label:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra
 
 .data
 # Tokens de directivas do Parser
@@ -687,6 +789,8 @@ erro_arquivo: .asciiz "Erro ao abrir o arquivo\n"
 sucesso_arquivo: .asciiz "Arquivo aberto com sucesso\n"
 invalid_instruction_error: .asciiz "Invalid instruction detected. Exiting."
 erro_criar_arquivo: .asciiz "Erro ao criar o arquivo\n"
+_erro_label_repetida: .asciiz "Erro ao criar label, nome já utilizado\n"
+_erro_de_conversao: .asciiz "Erro ao converter hex string para decimal\n"
 
 # MIF
 
