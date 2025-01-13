@@ -3,7 +3,8 @@
 filename: .space 128              # Espaço para o nome do arquivo
 buffer:   .space 1024             # Buffer para leitura do arquivo
 
-labels_space: .space 128
+buffer_label: .space 64
+labels_space: .space 256
 hex_chars: .asciiz "0123456789ABCDEF"
 hex_convert_buffer: .space 16
 
@@ -123,6 +124,11 @@ process_lines: # Recebe o ponteiro do buffer em $a0
         beq $t0, ' ', _next_byte       # Ignora ' ', menos os necessários
         beq $t0, ':', identifica_label     # Identifica label
         
+        la $a1, _xori_token
+        li $a2, 5
+        jal compara_str
+        beq $v0, 1, xori_encontrado
+
         # Isola a instrução
         jal isolate_instruction
 
@@ -133,21 +139,26 @@ process_lines: # Recebe o ponteiro do buffer em $a0
         jal generate_hex
         jal write_hex_file
         j _next_byte
-    _next_line:
-        
-        addi $s1, $s1, 1
 
+    _next_line:
+        lb $t0, -2($s0) # verifica se é uma linha em branco
+        beq $t0, '\n', _next_byte
+        addi $s1, $s1, 1
     _next_byte:
-        
         addi $a0, $a0, 1
         j process_lines
 
     _skip_line:
         # Pula até o final da linha de comentário
-        lb $t1, 0($t0)
-        beq $t1, '\n', _next_line
-        addi $t0, $t0, 1
+        lb $t1, 0($a0)
+        beq $t1, '\n', _next_byte
+        addi $a0, $a0, 1
         j _skip_line
+
+    xori_encontrado:
+        addi $s1, $s1, 2
+        addi $a0, $a0, 1
+        j process_lines
 
 invalid_instruction:
     # Lança exceção de instrução inexistente e descarta arquivo
@@ -155,6 +166,7 @@ invalid_instruction:
     la $a0, invalid_instruction_error # Printa "Invalid instruction detected. Exiting."
     syscall
 
+    j close_file
 
 # Função para isolar a instrução da linha
 isolate_instruction:
@@ -221,14 +233,14 @@ identifica_parte:
         # inicia a posição da memória da parte de data
         add $s1, $zero, $zero
 
-        addi $a0, $a0, 6 # vai para a próxima linha do código
+        addi $a0, $a0, 7 # vai para a próxima linha do código
 
         j process_lines # volta ao process_lines com o $a0 já alterado
 
     _text_parte:
         # Passou na verificação, move ao $a0 para continuar lendo o arquivo
 
-	lb $t0, 1($a0)
+	    lb $t0, 6($a0)
         bne $t0, '\n', invalid_instruction
 
         la $t2, current_section
@@ -238,7 +250,7 @@ identifica_parte:
         # inicia a posição da memória da parte de data
         add $s1, $zero, $zero
 
-        addi $a0, $a0, 6 # vai para a próxima linha do código
+        addi $a0, $a0, 7 # vai para a próxima linha do código
 
         j process_lines # volta ao process_lines com o $a0 já alterado
 
@@ -446,17 +458,25 @@ identifica_label:
         addi $sp, $sp, -1
         sb $t1, ($sp) # guarda o nome da label na pilha
         addi $t2, $t2, 1 #incrementa o contador
+        j _loop_identifica_label
 
     _fim_identifica_label:
+        _verifica_nome:
+        
+
+
+            
         # $s3 aponta para o fim de Labels_space
         _aloca_nome:
                 beqz $t2, _fim_loop_aloca_nome
-
+                
                 lb $t0, ($sp)
                 sb $t0, ($s3)
                 addi $sp, $sp, 1
                 addi $s3, $s3, 1
                 addi $t2, $t2, -1 # decrementa o contador
+                j _aloca_nome
+
             _fim_loop_aloca_nome:
                 li $t0, ':'
                 addi $s3, $s3, 1
@@ -606,32 +626,46 @@ fim_do_arquivo:
     move $s0, $v0              
     
     # Checa se houve erro 
-    bltz $s0, open_error       # If negative, there was an error
+    bltz $s0, create_error       # Se negativo teve erro
     
-    # Write to the file
-    li   $v0, 15               # System call 15: write to file
+    # Escreve no arquivo
+    li   $v0, 15               
     move $a0, $s0              # File descriptor
-    la   $a1, data_mif_buffer         # Address of message
-    li   $a2, 512                # Length of message (4 chars)
+    la   $a1, data_mif_buffer  
+    li   $a2, 512                # Tamanho da mensagem
     syscall
     
-    # Close the file
-    li   $v0, 16               # System call 16: close file
-    move $a0, $s0              # File descriptor to close
+    # Fecha o arquivo
+    li   $v0, 16               # Fecha o arquivo
+    move $a0, $s0              # File descriptor para fechar
     syscall
     
     # Exit program
     j exit_program
 
-    open_error:
+    create_error:
         # Print error message
         li   $v0, 4                # System call 4: print string
-        la   $a0, erro_arquivo        # Load error message
+        la   $a0, erro_criar_arquivo        # Load error message
         syscall
 
     exit_program:
         li   $v0, 10               # System call 10: exit
         syscall
+
+verifica_label:
+    # Recebe em a0 o ponteiro da label
+    # Recebe em a1 o tamanho da label
+    # Verifica se a label existe e retorna o número da memória
+    # Se não existe, retorna -1 em $v0
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
+
+    move $a2, $a1
+
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
+    jr $ra
 
 .data
 # Tokens de directivas do Parser
@@ -644,6 +678,7 @@ _byte_token: .asciiz ".byte "
 _ascii_token: .asciiz ".ascii "
 _half_token: .asciiz ".half "
 _space_token: .asciiz ".space "
+_xori_token: .asciiz "xori "
 
 # Mensagens
 
@@ -651,6 +686,7 @@ prompt_entrada: .asciiz "Digite o nome do arquivo (.asm): "
 erro_arquivo: .asciiz "Erro ao abrir o arquivo\n"
 sucesso_arquivo: .asciiz "Arquivo aberto com sucesso\n"
 invalid_instruction_error: .asciiz "Invalid instruction detected. Exiting."
+erro_criar_arquivo: .asciiz "Erro ao criar o arquivo\n"
 
 # MIF
 
