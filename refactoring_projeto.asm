@@ -22,6 +22,7 @@ imm_buffer: .space 32
 addr_buffer: .space 32
 instruction_buffer: .space 8
 
+
 word_buffer: .space 16
 data_mif_linha: .space 22
 dado_buffer: .space 16
@@ -29,6 +30,7 @@ data_mif_buffer: .space 512 # s4 aponta para o fim de data_mif_buffer
 
 text_mif_linha: .space 22
 text_mif_buffer: .space 512 # s5 aponta para o fim de text_mif_buffer
+imediato_buffer: .space 16
 
 # Seção atual (.data ou .text)
 # Não identificada -> 0
@@ -2259,7 +2261,8 @@ procura_argumentos_tipo_i:
         beq $t1, ')', _next_byte_tipo_i
         beq $t1, ',', _next_arg_tipo_i
 
-        
+        beq $t6, 2, _imediato # se for no campo dos imediatos, não aceita regs
+    lista_regs:
         move $a0, $s0 # reseta o endereço do argumento
         la $a1, _zero_token # token a ser comparado
         li $a2, 5 # len("$zero")
@@ -2740,20 +2743,36 @@ procura_argumentos_tipo_i:
         li $a1, 3             # Tamanho do token "$31"
         beq $v0, 1, aloca_argumento_tipo_i
 
-    
-        bne $t6, 2, invalid_instruction # Se o IMM estiver em local errado a instrução está inválida
+        j invalid_instruction
+    _imediato:
 
-        lb $t0, 0($s0) #verifica se o número é do formato -1
-        beq $t0, '-', _verifica_sinal_tipo_i
+        lb $t0, 0($s0) 
+        beq $t0, '$', invalid_instruction # verifica se foi preenchido corretamente
+        beq $t0, '-', _verifica_sinal_tipo_i #verifica se o número é do formato -1
         lb $t0, 1($s0)
         beq $t0, 'x', _imm_hexadecimal_tipo_i # passou por esses dois testes -> converte ascii to decimal -> aloca no buffer
+        
+        move $t1, $s0 
+        la $t0, imediato_buffer
+    _loop_imediato: 
+        lb $t2, ($t1)
+        beqz $t2, _fim_loop_imediato
+        beq $t2, ' ', _fim_loop_imediato
+        beq $t2, '\n', _fim_loop_imediato
 
-        move $a0, $s0
+        sb $t2, ($t0)
+        addi $t1, $t1, 1
+        addi $t0, $t0, 1
+        j _loop_imediato
+
+    _fim_loop_imediato:
+        sb $zero, 1($t0)
+
+        la $a0, imediato_buffer
         jal ascii_to_decimal
 
         add $a0, $zero, $v0 # valor da str de decimal
         add $a1, $zero, $v1 # len da str de algarismo 
-        addi $a1, $a1, 1
         j aloca_argumento_tipo_i
 
         _imm_hexadecimal_tipo_i:
@@ -2775,12 +2794,6 @@ procura_argumentos_tipo_i:
             add $a1, $zero, $v1
             addi $a1, $a1, 1
             j aloca_argumento_tipo_i
-
-        li $a2, 5 # len("$at")
-        jal compara_str # a0 é preservado nas comparações
-        add $a0, $zero, $zero
-        li $a1, 5 # len("$at")
-        beq $v0, 1, aloca_argumento_tipo_i
 
     _next_byte_tipo_i:
         addi $t0, $t0, 1
@@ -3966,7 +3979,7 @@ ascii_to_decimal:
         subi $t1, $t1, 48 # converte o ASCII para número           
         
         add $v0, $v0, $t1 # adiciona novo dígito
-        addi $t0, $t0, -1 # e continua o loop
+        addi $t0, $t0, 1 # e continua o loop
         addi $t4, $t4, 1 # incrementa o contador
         j _convert_loop
         
