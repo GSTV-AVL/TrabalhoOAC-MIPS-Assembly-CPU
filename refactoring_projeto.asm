@@ -27,7 +27,7 @@ dado_buffer: .space 16
 data_mif_buffer: .space 512 # s4 aponta para o fim de data_mif_buffer
 
 text_mif_linha: .space 22
-text_mif_buffer: .space 512 # 
+text_mif_buffer: .space 512 # s5 aponta para o fim de text_mif_buffer
 
 # Seção atual (.data ou .text)
 # Não identificada -> 0
@@ -57,6 +57,7 @@ main:
     # data já gerado
 
     # Inicia $a0 com o buffer da parte de text do arquivo
+    add $s1, $zero, $zero
     move $a0, $s6
     jal process_instructions
 
@@ -226,7 +227,6 @@ process_instructions:
     _next_line_instructions:
         lb $t0, -2($s0) # verifica se é uma linha em branco
         beq $t0, '\n', _next_byte_instructions
-        addi $s1, $s1, 1
     _next_byte_instructions:
         addi $a0, $a0, 1
         j process_instructions_switch_case
@@ -382,7 +382,12 @@ procura_argumentos_tipo_r:
         li $a2, 22
         jal aloca_str
 
-        addi $s1, $s1, 1 # vou pra próxima linha de código
+        li $t1, ' '
+        sb $t1, ($a1)
+        addi $a1, $a1, 1
+
+        move $s5, $a1 # aponta para o último endereço de text_mif
+        addi $s1, $s1, 1
         move $a0, $s0
         j process_instructions_switch_case
         
