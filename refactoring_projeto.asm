@@ -8,11 +8,26 @@ labels_space: .space 256 # Segue o seguinte modelo LABEL 0\:00000000 0\LABEL2 0\
 hex_chars: .asciiz "0123456789ABCDEF"
 hex_convert_buffer: .space 16
 
-nome_arquivo: .asciiz "data.mif"
+nome_arquivo_data: .asciiz "data.mif"
+nome_arquivo_text: .asciiz "text.mif"
+
+# Buffer para as instruções
+opcode_buffer: .space 8
+rs_buffer: .space 8
+rt_buffer: .space 8
+rd_buffer: .space 8
+shamt_buffer: .space 8
+funct_buffer: .space 8
+imm_buffer: .space 16
+addr_buffer: .space 32
+instruction_buffer: .space 8
 
 data_mif_linha: .space 22
 dado_buffer: .space 16
-data_mif_buffer: .space 512
+data_mif_buffer: .space 512 # s4 aponta para o fim de data_mif_buffer
+
+text_mif_linha: .space 22
+text_mif_buffer: .space 512 # 
 
 # Seção atual (.data ou .text)
 # Não identificada -> 0
@@ -22,14 +37,14 @@ data_mif_buffer: .space 512
 # $s0 tem o endereço da memória atual
 current_section: .byte 0
 
-# Lista de instruções válidas
-instructions: .asciiz "add\0sub\0and\0or\0xor\0nor\0slt\0lw\0sw\0beq\0bne\0addi\0andi\0ori\0xori\0"
-
 .text
 .globl main
 main:
+    # Inicialização dos buffers
     la $s3, labels_space
-    jal inicia_data_mif
+    jal inicia_data_mif # $s4 aponta para o fim do data_mif_buffer
+    jal inicia_text_mif # $s5 aponta para o fim do text_mif_buffer
+
     # Solicita o nome do arquivo ao usuário
     jal input_routine
     # Inicia a leitura do arquivo e aloca no buffer
@@ -38,6 +53,14 @@ main:
     # Inicia $a0 com o buffer da leitura do arquivo 
     la $a0, buffer 
     jal process_lines
+
+    # data já gerado
+
+    # Inicia $a0 com o buffer da parte de text do arquivo
+    move $a0, $s6
+    jal process_instructions
+
+    j fim_do_arquivo
 
 
 input_routine:                        # Rotina para receber o nome do arquivo
@@ -110,14 +133,14 @@ close_file:
     syscall
 
 process_lines: # Recebe o ponteiro do buffer em $a0
+    addi $sp, $sp, -4 # preserva a volta para main
+    sw $ra, 0($sp)
+    process_lines_switch_case:
 
-    move $s0, $a0  # mantém o ponteiro do buffer em $s0
+        move $s0, $a0  # mantém o ponteiro do buffer em $s0
+        lb $t0, 0($s0) # carrega $t0 com o byte do ponteiro
 
-    lb $t0, 0($s0) # carrega $t0 com o byte do ponteiro 
-    
-    _switch_case:
-        beqz $t0, fim_do_arquivo
-        beq $t0, '\0', fim_do_arquivo
+        beqz $t0, _fim_process_lines
         beq $t0, '#', _skip_line       # Ignora linhas de comentário
         beq $t0, '\n', _next_line      # Ignora linhas em branco
         beq $t0, '.', identifica_parte # Identifica se é .data ou .text
@@ -127,17 +150,8 @@ process_lines: # Recebe o ponteiro do buffer em $a0
         la $a1, _xori_token
         li $a2, 5
         jal compara_str
-        beq $v0, 1, xori_encontrado
+        beq $v0, 1, _xori_encontrado
 
-        # Isola a instrução
-        jal isolate_instruction
-
-        # Identifica o tipo de instrução e analisa campos
-        jal analyze_instruction
-
-        # Gera o valor hexadecimal e escreve no arquivo
-        jal generate_hex
-        jal write_hex_file
         j _next_byte
 
     _next_line:
@@ -146,7 +160,7 @@ process_lines: # Recebe o ponteiro do buffer em $a0
         addi $s1, $s1, 1
     _next_byte:
         addi $a0, $a0, 1
-        j process_lines
+        j process_lines_switch_case
 
     _skip_line:
         # Pula até o final da linha de comentário
@@ -155,10 +169,266 @@ process_lines: # Recebe o ponteiro do buffer em $a0
         addi $a0, $a0, 1
         j _skip_line
 
-    xori_encontrado:
+    _xori_encontrado:
         addi $s1, $s1, 2
         addi $a0, $a0, 1
-        j process_lines
+        j process_lines_switch_case
+
+    _fim_process_lines:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4 # volta para a main
+        
+        jr $ra
+
+process_instructions:
+    addi $sp, $sp, -4 # preserva a volta para main
+    sw $ra, 0($sp)
+    
+    process_instructions_switch_case:
+        move $s0, $a0  # mantém o ponteiro do buffer em $s0
+
+        lb $t0, 0($s0) # carrega $t0 com o byte do ponteiro
+
+        beqz $t0, _fim_process_instructions
+        beq $t0, '#', _skip_line_instructions       # Ignora linhas de comentário
+        beq $t0, '\n', _next_line_instructions      # Ignora linhas em branco
+        beq $t0, ' ', _next_byte_instructions       # Ignora ' ', menos os necessários
+        
+        # TIPO R
+
+        la $a1, _add_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_add
+
+            _instrucao_add:
+                add $a0, $a0, $s6 # anda o tamanho de add
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode
+                li $t0, 32
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # salva o shamt
+
+                j procura_argumentos_tipo_r
+
+
+            _instrucao_j:
+            _instrucao_jr:
+            _instrucao_jal:
+            _instrucao_jalr:
+            _instrucao_xori:
+
+        j _next_byte_instructions
+
+    _next_line_instructions:
+        lb $t0, -2($s0) # verifica se é uma linha em branco
+        beq $t0, '\n', _next_byte_instructions
+        addi $s1, $s1, 1
+    _next_byte_instructions:
+        addi $a0, $a0, 1
+        j process_instructions_switch_case
+
+    _skip_line_instructions:
+        # Pula até o final da linha de comentário
+        lb $t1, 0($a0)
+        beq $t1, '\n', _next_byte_instructions
+        addi $a0, $a0, 1
+        j _skip_line
+
+    _fim_process_instructions:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4 # volta para a main
+        jr $ra
+
+procura_argumentos_tipo_r:
+    # recebe em $a0 o ponteiro para uma instrução
+    move $t0, $a0
+
+    add $t6, $zero, $zero # inicia o contador de argumentos
+    _loop_procura_args_tipo_r:
+        lb $t1, 0($t0)
+        move $s0, $t0 # mantém o ponteiro do arg atual
+        
+        beqz $t1, _next_line_tipo_r
+        beq $t1, ' ', _next_byte_tipo_r
+        beq $t1, '\n', _next_line_tipo_r
+        beq $t1, ',', _next_arg_tipo_r
+
+        move $a0, $s0
+        la $a1, _0_token # token
+        li $a2, 2
+        jal compara_str # a0 é preservado nas comparações
+        add $a0, $zero, $zero # número do argumento $0
+        li $a1, 2
+        beq $v0, 1, aloca_argumento
+
+        move $a0, $s0
+        la $a1, _zero_token
+        li $a2, 5 # len("$at")
+        jal compara_str # a0 é preservado nas comparações
+        add $a0, $zero, $zero
+        li $a1, 5 # len("$at")
+        beq $v0, 1, aloca_argumento
+
+        move $a0, $s0
+        la $a1, _1_token
+        li $a2, 2
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 1
+        li $a1, 2
+        beq $v0, 1, aloca_argumento
+
+        move $a0, $s0
+        la $a1, _at_token
+        li $a2, 3  # len("$at")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 1
+        li $a1, 3 # len("$at")
+        beq $v0, 1, aloca_argumento
+
+    _next_byte_tipo_r:
+        addi $t0, $t0, 1
+        j _loop_procura_args_tipo_r
+
+    _next_line_tipo_r:
+        # gera linha de código de máquina e depois vai para o fim
+        addi $t0, $t0, 1
+        move $s0, $t0 # buffer atual do arquivo orginal
+
+        add $t2, $zero, $zero
+
+        la $t1, opcode_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 26
+
+        addu $t2, $t2, $t3
+
+        la $t1, rs_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 21
+        addu $t2, $t2, $t3
+
+        la $t1, rt_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 16
+        addu $t2, $t2, $t3
+
+        la $t1, rd_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 11
+        addu $t2, $t2, $t3
+
+        la $t1, shamt_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 6
+        addu $t2, $t2, $t3
+
+        la $t1, funct_buffer
+        lb $t3, 0($t1)
+
+        addu $t2, $t2, $t3
+
+        # Fecha a instrução com tudo
+
+        move $a0, $t2 # recebe o valor em decimal da instrução
+        la $a1, instruction_buffer # mantém em instruction_buffer
+        jal decimal_to_hex_ascii
+
+        move $a0, $s1
+        la $a1, text_mif_linha
+        jal decimal_to_hex_ascii # text_mif_linha já vai ter o endereço de memória
+        
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, ':'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        la $a0, instruction_buffer
+        move $a1, $t0 # endereço do buffer data_mif_linha atual
+        li $a2, 8
+        jal aloca_str 
+
+        move $t0, $a1
+
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, ';'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, '\n'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        la $a0, text_mif_linha
+        move $a1, $s5
+        li $a2, 22
+        jal aloca_str
+
+        addi $s1, $s1, 1 # vou pra próxima linha de código
+        move $a0, $s0
+        j process_instructions_switch_case
+        
+
+    _next_arg_tipo_r:
+        # adiciona no num de args
+        addi $t6, $t6, 1
+        addi $t0, $t0, 1
+        j _loop_procura_args_tipo_r
+        
+
+    _fim_procura_args:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra # volta para process_instructions
+
+
+aloca_argumento:
+    # recebe em $a0 o valor do argumento
+    # recebe em $a1 o tamanho da str do argumento
+    # $s0 tem o ponteiro do arg atual
+    beqz $t6, _aloca_rd
+    beq $t6, 1, _aloca_rs
+    beq $t6, 2, _aloca_rt
+    beq $t6, 3, invalid_instruction
+
+    _aloca_rd:
+        la $t0, rd_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        j _loop_procura_args_tipo_r
+
+    _aloca_rs:
+        la $t0, rs_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        j _loop_procura_args_tipo_r
+
+    _aloca_rt:
+        la $t0, rt_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        j _loop_procura_args_tipo_r
 
 invalid_instruction:
     # Lança exceção de instrução inexistente e descarta arquivo
@@ -167,34 +437,6 @@ invalid_instruction:
     syscall
 
     j close_file
-
-# Função para isolar a instrução da linha
-isolate_instruction:
-    # Implementar a lógica para isolar a instrução
-    jr $ra
-
-# Função para validar a instrução
-validate_instruction: # validate_instruction($a0 [endereço das instruções])
-    # Implementar a lógica para validar a instrução
-    
-    jr $ra
-
-# Função para analisar a instrução e seus campos
-analyze_instruction:
-    # Implementar a lógica para analisar os campos da instrução
-    jr $ra
-
-# Função para gerar o valor hexadecimal da instrução
-generate_hex:
-    # Implementar a lógica para gerar o valor hexadecimal
-    jr $ra
-
-# Função para escrever o valor hexadecimal no arquivo
-write_hex_file:
-    # Implementar a lógica para escrever no arquivo
-    jr $ra
-
-# Erro é acionado ao não conseguir abrir o arquivo
 
 identifica_parte:     
     
@@ -235,7 +477,7 @@ identifica_parte:
 
         addi $a0, $a0, 7 # vai para a próxima linha do código
 
-        j process_lines # volta ao process_lines com o $a0 já alterado
+        j process_lines_switch_case # volta ao process_lines com o $a0 já alterado
 
     _text_parte:
         # Passou na verificação, move ao $a0 para continuar lendo o arquivo
@@ -252,7 +494,9 @@ identifica_parte:
 
         addi $a0, $a0, 7 # vai para a próxima linha do código
 
-        j process_lines # volta ao process_lines com o $a0 já alterado
+        move $s6, $a0
+
+        j process_lines_switch_case # volta ao process_lines com o $a0 já alterado
 
     _parte_nao_identificada:
         # Possibilidade de tipo de dado
@@ -429,14 +673,14 @@ identifica_parte:
                     # anda com o ponteiro e volta a rotina de processamento de linha
                     
                     move $a0, $t0
-                    j process_lines
+                    j process_lines_switch_case
                 
         #_asciiz_token: .asciiz ".asciiz"
         _verifica_asciiz:
-    # ainda não
+        # ainda não
             la $t2, _asciiz_token
             lb $t3, 1($t2)
-            j process_lines
+            j process_lines_switch_case
         
         
         #_byte_token: .asciiz ".byte"
@@ -512,7 +756,7 @@ identifica_label:
         lw $a0, 0($sp)
         addi $sp, $sp, 4 # resgata o ponteiro do buffer da pilha
         addi $a0, $a0, 1
-        j process_lines
+        j process_lines_switch_case
 
 erro_label_repetida:
     li $v0, 4
@@ -527,7 +771,7 @@ erro_label_repetida:
 ############################################################
 
 compara_str:
-    move $t0, $a0 # mantenho o $a0 sem alterar
+    move $t0, $a0 # mantenho o $a0 sem altera
     _loop_compara_str:
         beqz $a2, _fim_igual_compara_str	# while n:
         lb $t4, 0($t0)				# compara '' com ''
@@ -590,7 +834,7 @@ decimal_to_hex_ascii:
         # Armazena no buffer
         sb $t4, ($t0)
         
-        sll $t2, $t2, 4 # deloca para a esquerda ximos 4 bits
+        sll $t2, $t2, 4 # desloca para a esquerda ximos 4 bits
         addi $t0, $t0, 1 # e parte para a próxima posição do buffer
         addi $t1, $t1, -1 # decrementa contador
         j _hex_loop
@@ -685,14 +929,34 @@ inicia_data_mif:
 
     jr $ra
 
+inicia_text_mif:
+    addi $sp, $sp, -4
+
+    sw $ra, 0($sp)
+    la $a0, text_mif_cabecalho
+    la $a1, text_mif_buffer
+    li $a2, 81
+    jal aloca_str
+
+
+    add $s5, $zero, $a1
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
+
+    jr $ra
+
 fim_do_arquivo:
+
+    ##########################################################
+    # Monta o arquivo data
+
     la $a0, rodape_mif
     move $a1, $s4
     li $a2, 5
     jal aloca_str
 
     li   $v0, 13                 # Cria um novo arquivo
-    la   $a0, nome_arquivo         
+    la   $a0, nome_arquivo_data         
     li   $a1, 1                 
     li   $a2, 0x644            
     syscall                     
@@ -713,6 +977,37 @@ fim_do_arquivo:
     li   $v0, 16               # Fecha o arquivo
     move $a0, $s0              # File descriptor para fechar
     syscall
+
+    ##########################################################
+    # Monta o arquivo text
+    la $a0, rodape_mif
+    move $a1, $s5
+    li $a2, 5
+    jal aloca_str
+
+    li   $v0, 13                 # Cria um novo arquivo
+    la   $a0, nome_arquivo_text         
+    li   $a1, 1                 
+    li   $a2, 0x644            
+    syscall                     
+
+    move $s0, $v0              
+    
+    # Checa se houve erro 
+    bltz $s0, create_error       # Se negativo teve erro
+    
+    # Escreve no arquivo
+    li   $v0, 15               
+    move $a0, $s0              # File descriptor
+    la   $a1, text_mif_buffer  
+    li   $a2, 512                # Tamanho da mensagem
+    syscall
+    
+    # Fecha o arquivo
+    li   $v0, 16               # Fecha o arquivo
+    move $a0, $s0              # File descriptor para fechar
+    syscall
+
     
     # Exit program
     j exit_program
@@ -780,7 +1075,6 @@ _byte_token: .asciiz ".byte "
 _ascii_token: .asciiz ".ascii "
 _half_token: .asciiz ".half "
 _space_token: .asciiz ".space "
-_xori_token: .asciiz "xori "
 
 # Mensagens
 
@@ -797,3 +1091,144 @@ _erro_de_conversao: .asciiz "Erro ao converter hex string para decimal\n"
 data_mif_cabecalho: .asciiz "DEPTH = 16384;\nWIDTH = 32;\nADDRESS_RADIX = HEX;\nDATA_RADIX = HEX;\nCONTENT\nBEGIN\n\n"
 text_mif_cabecalho: .asciiz "DEPTH = 4096;\nWIDTH = 32;\nADDRESS_RADIX = HEX;\nDATA_RADIX = HEX;\nCONTENT\nBEGIN\n\n"
 rodape_mif: .asciiz "\nEND;\n"
+
+
+# Lista de argumentos válidos
+_zero_token: .asciiz "$zero"
+_0_token: .asciiz "$0"
+
+_at_token: .asciiz "$at"
+_1_token: .asciiz "$1"
+
+_v0_token: .asciiz "$v0"
+_2_token: .asciiz "$2"
+
+_v1_token: .asciiz "$v1"
+_3_token: .asciiz "$3"
+
+_a0_token: .asciiz "$a0"
+_4_token: .asciiz "$4"
+
+_a1_token: .asciiz "$a1"
+_5_token: .asciiz "$5"
+
+_a2_token: .asciiz "$a2"
+_6_token: .asciiz "$6"
+
+_a3_token: .asciiz "$a3"
+_7_token: .asciiz "$7"
+
+_t0_token: .asciiz "$t0"
+_8_token: .asciiz "$8"
+
+_t1_token: .asciiz "$t1"
+_9_token: .asciiz "$9"
+
+_t2_token: .asciiz "$t2"
+_10_token: .asciiz "$10"
+
+_t3_token: .asciiz "$t3"
+_11_token: .asciiz "$11"
+
+_t4_token: .asciiz "$t4"
+_12_token: .asciiz "$12"
+
+_t5_token: .asciiz "$t5"
+_13_token: .asciiz "$13"
+
+_t6_token: .asciiz "$t6"
+_14_token: .asciiz "$14"
+
+_t7_token: .asciiz "$t7"
+_15_token: .asciiz "$15"
+
+_t8_token: .asciiz "$t8"
+_24_token: .asciiz "$24"
+
+_t9_token: .asciiz "$t9"
+_25_token: .asciiz "$25"
+
+_s0_token: .asciiz "$s0"
+_16_token: .asciiz "$16"
+
+_s1_token: .asciiz "$s1"
+_17_token: .asciiz "$17"
+
+_s2_token: .asciiz "$s2"
+_18_token: .asciiz "$18"
+
+_s3_token: .asciiz "$s3"
+_19_token: .asciiz "$19"
+
+_s4_token: .asciiz "$s4"
+_20_token: .asciiz "$20"
+
+_s5_token: .asciiz "$s5"
+_21_token: .asciiz "$21"
+
+_s6_token: .asciiz "$s6"
+_22_token: .asciiz "$22"
+
+_s7_token: .asciiz "$s7"
+_23_token: .asciiz "$23"
+
+_ra_token: .asciiz "$ra"
+_31_token: .asciiz "$31"
+
+_gp_token: .asciiz "$gp"
+_28_token: .asciiz "$28"
+
+_sp_token: .asciiz "$sp"
+_29_token: .asciiz "$29"
+
+_fp_token: .asciiz "$fp"
+_30_token: .asciiz "$30"
+
+_lo_token: .asciiz "$lo"
+_hi_token: .asciiz "$hi"
+
+# Lista de instruções válidas
+# TIPO R
+_lw_token: .asciiz "lw "
+_add_token: .asciiz "add " # pode aceitar imediato também
+_sub_token: .asciiz "sub "
+_and_token: .asciiz "and "
+_or_token: .asciiz "or "
+_nor_token: .asciiz "nor "
+_xor_token: .asciiz "xor "
+_addu_token: .asciiz "addu "
+_subu_token: .asciiz "subu "
+_sll_token: .asciiz "sll "
+_srl_token: .asciiz "srl "
+_sllv_token: .asciiz "sllv "
+_mult_token: .asciiz "mult "
+_div_token: .asciiz "div "
+_mfhi_token: .asciiz "mfhi "
+_mflo_token: .asciiz "mflo "
+_break_token: .asciiz "break" # caso especial
+_lwr_token: .asciiz "lwr "
+_bnel_token: .asciiz "bnel "
+_movz_token: .asciiz "movz "
+_multu_token: .asciiz "multu "
+_bal_token: .asciiz "bal "
+_bgtzl_token: .asciiz "bgtzl "
+_msub_token: .asciiz "msub "
+_srlv_token: .asciiz "srlv "
+_tne_token: .asciiz "tne "
+_beq_token: .asciiz "beq "
+_bne_token: .asciiz "bne "
+_slt_token: .asciiz "slt "
+_lui_token: .asciiz "lui "
+_sw_token: .asciiz "sw "
+
+# TIPO I
+_addi_token: .asciiz "addi "
+_andi_token: .asciiz "andi "
+_ori_token: .asciiz "ori "
+_xori_token: .asciiz "xori "
+
+# TIPO J
+_j_token: .asciiz "j "
+_jr_token: .asciiz "jr "
+_jal_token: .asciiz "jal "
+_jalr_token: .asciiz "jalr "
