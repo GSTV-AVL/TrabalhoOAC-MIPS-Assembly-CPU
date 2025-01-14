@@ -277,7 +277,7 @@ process_instructions:
             beq $v0, 1, _instrucao_slt
 
         _2args:
-
+            
             la $a1, _mult_token
             li $s6, 6 # tamanho do token
             move $a2, $s6
@@ -383,6 +383,10 @@ process_instructions:
                 li $t0, 8 # carrega o opcode de addi
                 sb $t0, 0($t1) # salva o opcode
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_i
 
             _instrucao_add:
@@ -395,6 +399,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # salva o shamt
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_sub:
@@ -407,6 +415,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # salva o shamt
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_and:
@@ -419,6 +431,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # salva o shamt (não utilizado em and)
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_or:
@@ -431,6 +447,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # salva o shamt (não utilizado em or)
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_nor:
@@ -443,6 +463,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # salva o shamt (não utilizado em nor)
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_xor:
@@ -454,7 +478,11 @@ process_instructions:
                 sb $t0, 0($t1) # salva o funct (38 é o código para xor)
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # salva o shamt (não utilizado em xor)
-
+                
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_addu:
@@ -467,6 +495,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em addu
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_subu:
@@ -479,6 +511,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em subu
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_slt:
@@ -491,6 +527,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em slt
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_sll: # é tipo I
@@ -504,7 +544,11 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $t0, 0($t1) # salva o shamt (valor de deslocamento)
 
-                j procura_argumentos_tipo_r
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
+                j procura_argumentos_tipo_i
 
             _instrucao_srl: # é tipo I
                 add $a0, $a0, $s6 # anda o tamanho de srl
@@ -517,7 +561,7 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $t0, 0($t1) # salva o shamt (valor de deslocamento)
 
-                j procura_argumentos_tipo_r
+                j procura_argumentos_tipo_i
 
             _instrucao_sllv:
                 add $a0, $a0, $s6 # anda o tamanho de sllv
@@ -529,6 +573,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em sllv
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_mult: # é de dois argumentos
@@ -541,6 +589,13 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em mult
 
+                la $t1, rd_buffer
+                sb $zero, 0($t1) # limpa o buffer do rd
+
+                li $a1, 1 # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_div: # é de dois argumentos
@@ -553,6 +608,13 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em div
 
+                la $t1, rd_buffer
+                sb $zero, 0($t1) # limpa o buffer do rd
+
+                li $a1, 1 # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_mfhi: # é de um argumento
@@ -565,6 +627,16 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em mfhi
 
+                la $t1, rt_buffer
+                sb $zero, 0($t1)
+
+                la $t1, rs_buffer
+                sb $zero, 0($t1)
+
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_mflo: # é de um argumento
@@ -577,6 +649,16 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em mflo
 
+                la $t1, rt_buffer # não tem rt
+                sb $zero, 0($t1)
+
+                la $t1, rs_buffer # não tem rs
+                sb $zero, 0($t1)
+
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                                # RD = 0
+                                                # RS = 1
+                                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_jr:
@@ -589,6 +671,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em jr
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_jalr:
@@ -601,6 +687,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em jalr
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_break: # Não tem argumento ##########
@@ -636,6 +726,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em movz
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_multu:
@@ -648,6 +742,13 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em multu
 
+                la $t1, rd_buffer
+                sb $zero, 0($t1) # limpa o buffer do rd
+                
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_msub:
@@ -660,6 +761,13 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em msub
 
+                la $t1, rd_buffer
+                sb $zero, 0($t1) # limpa o buffer do rd
+
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_srlv:
@@ -672,6 +780,10 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em srlv
 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_r
 
             _instrucao_tne:
@@ -684,6 +796,14 @@ process_instructions:
                 la $t1, shamt_buffer 
                 sb $zero, 0($t1) # shamt não é usado em tne
 
+                la $t1, rd_buffer
+                sb $zero, 0($t1) # limpa o buffer do rd
+
+                li $a1, 1 # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
+
                 j procura_argumentos_tipo_r
 
             _instrucao_lw:
@@ -692,6 +812,11 @@ process_instructions:
                 li $t0, 35
                 sb $t0, 0($t1) # salva o opcode (0 para tipo R)
                 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
+
                 j procura_argumentos_tipo_i_offset
 
             _instrucao_sw:
@@ -700,6 +825,12 @@ process_instructions:
                 li $t0, 43
                 sb $t0, 0($t1) # salva o opcode (0 para tipo R)
                 
+
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
+
                 j procura_argumentos_tipo_i_offset
 
             _instrucao_lwr:
@@ -708,9 +839,11 @@ process_instructions:
                 li $t0, 38
                 sb $t0, 0($t1) # salva o opcode (0 para tipo R)
                 
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
                 j procura_argumentos_tipo_i_offset
-
-        j _next_byte_instructions
 
     _next_line_instructions:
         lb $t0, -2($s0) # verifica se é uma linha em branco
@@ -751,9 +884,13 @@ process_instructions:
 
 procura_argumentos_tipo_r:
     # recebe em $a0 o ponteiro para uma instrução
+    # recebe em $a1 o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
     move $t0, $a0
 
-    add $t6, $zero, $zero # inicia o contador de argumentos
+    add $t6, $zero, $a1 # inicia o contador de argumentos
     _loop_procura_args_tipo_r:
         lb $t1, 0($t0)
         move $s0, $t0 # mantém o ponteiro do arg atual
@@ -1245,6 +1382,7 @@ procura_argumentos_tipo_r:
         li $a1, 3             # Tamanho do token "$31"
         beq $v0, 1, aloca_argumento_tipo_r
 
+        j invalid_instruction # se não é nenhum token a instrução é invalida -> tipo r
     _next_byte_tipo_r:
         addi $t0, $t0, 1
         j _loop_procura_args_tipo_r
