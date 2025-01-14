@@ -18,7 +18,7 @@ rt_buffer: .space 8
 rd_buffer: .space 8
 shamt_buffer: .space 8
 funct_buffer: .space 8
-imm_buffer: .space 16
+imm_buffer: .space 32
 addr_buffer: .space 32
 instruction_buffer: .space 8
 
@@ -203,6 +203,170 @@ process_instructions:
         jal compara_str
         beq $v0, 1, _instrucao_add
 
+        la $a1, _sub_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_sub
+
+        la $a1, _and_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_and
+
+        la $a1, _or_token
+        li $s6, 3 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_or
+
+        la $a1, _nor_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_nor
+
+        la $a1, _xor_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_xor
+
+        la $a1, _addu_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_addu
+
+        la $a1, _subu_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_subu
+
+        la $a1, _sll_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_sll
+
+        la $a1, _srl_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_srl
+
+        la $a1, _sllv_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_sllv
+
+        la $a1, _multu_token
+        li $s6, 6 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_multu
+
+        la $a1, _div_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_div
+
+        la $a1, _mfhi_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_mfhi
+
+        la $a1, _mflo_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_mflo
+
+        la $a1, _break_token
+        li $s6, 6 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_break
+
+        la $a1, _movz_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_movz
+
+        la $a1, _multu_token
+        li $s6, 6 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_multu
+
+        la $a1, _msub_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_msub
+
+        la $a1, _srlv_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_srlv
+
+        la $a1, _tne_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_tne
+
+        la $a1, _slt_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_slt
+
+        # TIPO I COM OFFSET
+
+        la $a1, _lw_token
+        li $s6, 3 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_lw
+
+        la $a1, _sw_token
+        li $s6, 3 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_sw
+
+        la $a1, _lwr_token
+        li $s6, 4 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_lwr
+
+        # TIPO I COM IMM
+
+        la $a1, _addi_token
+        li $s6, 5 # tamanho do token
+        move $a2, $s6
+        jal compara_str
+        beq $v0, 1, _instrucao_addi
+
+
+        j invalid_instruction
+            _instrucao_addi:
+                add $a0, $a0, $s6 # anda o tamanho de add
+                la $t1, opcode_buffer
+                li $t0, 8 # carrega o opcode de addi
+                sb $t0, 0($t1) # salva o opcode
+
+                j procura_argumentos_tipo_i
+
             _instrucao_add:
                 add $a0, $a0, $s6 # anda o tamanho de add
                 la $t1, opcode_buffer
@@ -215,12 +379,308 @@ process_instructions:
 
                 j procura_argumentos_tipo_r
 
+            _instrucao_sub:
+                add $a0, $a0, $s6 # anda o tamanho de sub
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode
+                li $t0, 34
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (34 é o código para sub)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # salva o shamt
 
-            _instrucao_j:
+                j procura_argumentos_tipo_r
+
+            _instrucao_and:
+                add $a0, $a0, $s6 # anda o tamanho de and
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para instruções do tipo R)
+                li $t0, 36
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (36 é o código para and)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # salva o shamt (não utilizado em and)
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_or:
+                add $a0, $a0, $s6 # anda o tamanho de or
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para instruções do tipo R)
+                li $t0, 37
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (37 é o código para or)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # salva o shamt (não utilizado em or)
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_nor:
+                add $a0, $a0, $s6 # anda o tamanho de nor
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para instruções do tipo R)
+                li $t0, 39
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (39 é o código para nor)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # salva o shamt (não utilizado em nor)
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_xor:
+                add $a0, $a0, $s6 # anda o tamanho de xor
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para instruções do tipo R)
+                li $t0, 38
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (38 é o código para xor)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # salva o shamt (não utilizado em xor)
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_addu:
+                add $a0, $a0, $s6 # anda o tamanho de addu
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 33
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (33 é o código para addu)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em addu
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_subu:
+                add $a0, $a0, $s6 # anda o tamanho de subu
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 35
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (35 é o código para subu)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em subu
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_slt:
+                add $a0, $a0, $s6 # anda o tamanho de slt
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 42
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (42 é o código para slt)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em slt
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_sll: # é tipo I
+                add $a0, $a0, $s6 # anda o tamanho de sll
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 0
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (0 é o código para sll)
+                li $t0, 10
+                la $t1, shamt_buffer 
+                sb $t0, 0($t1) # salva o shamt (valor de deslocamento)
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_srl: # é tipo I
+                add $a0, $a0, $s6 # anda o tamanho de srl
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 2
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (2 é o código para srl)
+                li $t0, 10
+                la $t1, shamt_buffer 
+                sb $t0, 0($t1) # salva o shamt (valor de deslocamento)
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_sllv:
+                add $a0, $a0, $s6 # anda o tamanho de sllv
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 4
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (4 é o código para sllv)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em sllv
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_mult: # é de dois argumentos
+                add $a0, $a0, $s6 # anda o tamanho de mult
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 24
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (24 é o código para mult)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em mult
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_div: # é de dois argumentos
+                add $a0, $a0, $s6 # anda o tamanho de div
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 26
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (26 é o código para div)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em div
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_mfhi: # é de um argumento
+                add $a0, $a0, $s6 # anda o tamanho de mfhi
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 16
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (16 é o código para mfhi)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em mfhi
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_mflo: # é de um argumento
+                add $a0, $a0, $s6 # anda o tamanho de mflo
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 18
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (18 é o código para mflo)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em mflo
+
+                j procura_argumentos_tipo_r
+
             _instrucao_jr:
-            _instrucao_jal:
+                add $a0, $a0, $s6 # anda o tamanho de jr
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 8
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (8 é o código para jr)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em jr
+
+                j procura_argumentos_tipo_r
+
             _instrucao_jalr:
-            _instrucao_xori:
+                add $a0, $a0, $s6 # anda o tamanho de jalr
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 9
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (9 é o código para jalr)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em jalr
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_break: # Não tem argumento ##########
+                add $a0, $a0, $s6 # anda o tamanho de break
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 13
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (13 é o código para break)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em break
+                
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_movz:
+                add $a0, $a0, $s6 # anda o tamanho de movz
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 10
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (10 é o código para movz)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em movz
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_multu:
+                add $a0, $a0, $s6 # anda o tamanho de multu
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 25
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (25 é o código para multu)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em multu
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_msub:
+                add $a0, $a0, $s6 # anda o tamanho de msub
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 46
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (46 é o código para msub)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em msub
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_srlv:
+                add $a0, $a0, $s6 # anda o tamanho de srlv
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 6
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (6 é o código para srlv)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em srlv
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_tne:
+                add $a0, $a0, $s6 # anda o tamanho de tne
+                la $t1, opcode_buffer
+                sb $zero, 0($t1) # salva o opcode (0 para tipo R)
+                li $t0, 54
+                la $t1, funct_buffer
+                sb $t0, 0($t1) # salva o funct (54 é o código para tne)
+                la $t1, shamt_buffer 
+                sb $zero, 0($t1) # shamt não é usado em tne
+
+                j procura_argumentos_tipo_r
+
+            _instrucao_lw:
+                add $a0, $a0, $s6 # anda o tamanho de tne
+                la $t1, opcode_buffer
+                li $t0, 35
+                sb $t0, 0($t1) # salva o opcode (0 para tipo R)
+                
+                j procura_argumentos_tipo_i_offset
+
+            _instrucao_sw:
+                add $a0, $a0, $s6 # anda o tamanho de tne
+                la $t1, opcode_buffer
+                li $t0, 43
+                sb $t0, 0($t1) # salva o opcode (0 para tipo R)
+                
+                j procura_argumentos_tipo_i_offset
+
+            _instrucao_lwr:
+                add $a0, $a0, $s6 # anda o tamanho de tne
+                la $t1, opcode_buffer
+                li $t0, 38
+                sb $t0, 0($t1) # salva o opcode (0 para tipo R)
+                
+                j procura_argumentos_tipo_i_offset
 
         j _next_byte_instructions
 
@@ -253,41 +713,491 @@ procura_argumentos_tipo_r:
         move $s0, $t0 # mantém o ponteiro do arg atual
         
         beqz $t1, _next_line_tipo_r
+        beq $t1, '\r', _next_byte_tipo_r
         beq $t1, ' ', _next_byte_tipo_r
         beq $t1, '\n', _next_line_tipo_r
         beq $t1, ',', _next_arg_tipo_r
 
-        move $a0, $s0
-        la $a1, _0_token # token
-        li $a2, 2
-        jal compara_str # a0 é preservado nas comparações
-        add $a0, $zero, $zero # número do argumento $0
-        li $a1, 2
-        beq $v0, 1, aloca_argumento
 
-        move $a0, $s0
-        la $a1, _zero_token
-        li $a2, 5 # len("$at")
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _zero_token # token a ser comparado
+        li $a2, 5 # len("$zero")
         jal compara_str # a0 é preservado nas comparações
-        add $a0, $zero, $zero
-        li $a1, 5 # len("$at")
-        beq $v0, 1, aloca_argumento
+        li $a0, 0 # valor numérico do registrador
+        li $a1, 5 # len("$zero")
+        beq $v0, 1, aloca_argumento_tipo_r
 
-        move $a0, $s0
-        la $a1, _1_token
-        li $a2, 2
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _0_token # token a ser comparado
+        li $a2, 2 # len("$0")
         jal compara_str # a0 é preservado nas comparações
-        li $a0, 1
-        li $a1, 2
-        beq $v0, 1, aloca_argumento
+        li $a0, 0 # valor numérico do registrador
+        li $a1, 2 # len("$0")
+        beq $v0, 1, aloca_argumento_tipo_r
 
-        move $a0, $s0
-        la $a1, _at_token
-        li $a2, 3  # len("$at")
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _at_token # token a ser comparado
+        li $a2, 3 # len("$at")
         jal compara_str # a0 é preservado nas comparações
-        li $a0, 1
+        li $a0, 1 # valor numérico do registrador
         li $a1, 3 # len("$at")
-        beq $v0, 1, aloca_argumento
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _1_token # token a ser comparado
+        li $a2, 2 # len("$1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 1 # valor numérico do registrador
+        li $a1, 2 # len("$1")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _v0_token # token  a ser comparado
+        li $a2, 3 # len("$v0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 2 # valor numérico do registrador
+        li $a1, 3 # len("$v0")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _2_token # token  a ser comparado
+        li $a2, 2 # len("$2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 2 # valor numérico do registrador
+        li $a1, 2 # len("$2")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _v1_token # token  a ser comparado
+        li $a2, 3 # len("$v1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 3 # valor numérico do registrador
+        li $a1, 3 # len("$v1")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _3_token # token a ser comparado
+        li $a2, 2 # len("$3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 3 # valor numérico do registrador
+        li $a1, 2 # len("$3")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a0_token # token  a ser comparado
+        li $a2, 3 # len("$a0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 4 # valor numérico do registrador
+        li $a1, 3 # len("$a0")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _4_token # token a ser comparado
+        li $a2, 2 # len("$4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 4 # valor numérico do registrador
+        li $a1, 2 # len("$4")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a1_token # token  a ser comparado
+        li $a2, 3 # len("$a1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 5 # valor numérico do registrador
+        li $a1, 3 # len("$a0")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _5_token # token a ser comparado
+        li $a2, 2 # len("$5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 5 # valor numérico do registrador
+        li $a1, 2 # len("$5")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a2_token # token  a ser comparado
+        li $a2, 3 # len("$a2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 6 # valor numérico do registrador
+        li $a1, 3 # len("$a2")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _6_token # token a ser comparado
+        li $a2, 2 # len("$6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 6 # valor numérico do registrador
+        li $a1, 2 # len("$6")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a3_token # token  a ser comparado
+        li $a2, 3 # len("$a3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 7 # valor numérico do registrador
+        li $a1, 3 # len("$a3")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _7_token # token a ser comparado
+        li $a2, 2 # len("$7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 7 # valor numérico do registrador
+        li $a1, 2 # len("$7")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t0_token # token  a ser comparado
+        li $a2, 3 # len("$t0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 8 # valor numérico do registrador
+        li $a1, 3 # len("$t0")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _8_token # token a ser comparado
+        li $a2, 2 # len("$8")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 8 # valor numérico do registrador
+        li $a1, 2 # len("$8")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t1_token # token  a ser comparado
+        li $a2, 3 # len("$t1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 9 # valor numérico do registrador
+        li $a1, 3 # len("$t1")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _9_token # token a ser comparado
+        li $a2, 2 # len("$9")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 9 # valor numérico do registrador
+        li $a1, 2 # len("$9")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t2_token # token  a ser comparado
+        li $a2, 3 # len("$t2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 10 # valor numérico do registrador
+        li $a1, 3 # len("$t2")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _10_token # token a ser comparado
+        li $a2, 3 # len("$10")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 10 # valor numérico do registrador
+        li $a1, 3 # len("$10")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t3_token # token  a ser comparado
+        li $a2, 3 # len("$t3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 11 # valor numérico do registrador
+        li $a1, 3 # len("$t3")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _11_token # token a ser comparado
+        li $a2, 3 # len("$11")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 11 # valor numérico do registrador
+        li $a1, 3 # len("$11")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t4_token # token  a ser comparado
+        li $a2, 3 # len("$t4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 12 # valor numérico do registrador
+        li $a1, 3 # len("$t4")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _12_token # token a ser comparado
+        li $a2, 3 # len("$12")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 12 # valor numérico do registrador
+        li $a1, 3 # len("$12")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t5_token # token  a ser comparado
+        li $a2, 3 # len("$t5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 13 # valor numérico do registrador
+        li $a1, 3 # len("$t5")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _13_token # token a ser comparado
+        li $a2, 3 # len("$13")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 13 # valor numérico do registrador
+        li $a1, 3 # len("$13")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t6_token # token  a ser comparado
+        li $a2, 3 # len("$t6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 14 # valor numérico do registrador
+        li $a1, 3 # len("$t6")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _14_token # token a ser comparado
+        li $a2, 3 # len("$14")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 14 # valor numérico do registrador
+        li $a1, 3 # len("$14")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t7_token # token  a ser comparado
+        li $a2, 3 # len("$t7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 15 # valor numérico do registrador
+        li $a1, 3 # len("$t7")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _15_token # token a ser comparado
+        li $a2, 3 # len("$15")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 15 # valor numérico do registrador
+        li $a1, 3 # len("$15")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s0_token # token  a ser comparado
+        li $a2, 3 # len("$s0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 16 # valor numérico do registrador
+        li $a1, 3 # len("$s0")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _16_token # token a ser comparado
+        li $a2, 3 # len("$16")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 16 # valor numérico do registrador
+        li $a1, 3 # len("$16")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s1_token # token  a ser comparado
+        li $a2, 3 # len("$s1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 17 # valor numérico do registrador
+        li $a1, 3 # len("$s1")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _17_token # token a ser comparado
+        li $a2, 3 # len("$17")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 17 # valor numérico do registrador
+        li $a1, 3 # len("$17")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s2_token # token  a ser comparado
+        li $a2, 3 # len("$s2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 18 # valor numérico do registrador
+        li $a1, 3 # len("$s2")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _18_token # token a ser comparado
+        li $a2, 3 # len("$18")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 18 # valor numérico do registrador
+        li $a1, 3 # len("$18")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s3_token # token  a ser comparado
+        li $a2, 3 # len("$s3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 19 # valor numérico do registrador
+        li $a1, 3 # len("$s3")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _19_token # token a ser comparado
+        li $a2, 3 # len("$19")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 19 # valor numérico do registrador
+        li $a1, 3 # len("$19")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s4_token # token  a ser comparado
+        li $a2, 3 # len("$s4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 20 # valor numérico do registrador
+        li $a1, 3 # len("$s4")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _20_token # token a ser comparado
+        li $a2, 3 # len("$20")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 20 # valor numérico do registrador
+        li $a1, 3 # len("$20")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s5_token # token  a ser comparado
+        li $a2, 3 # len("$s5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 21 # valor numérico do registrador
+        li $a1, 3 # len("$s5")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _21_token # token a ser comparado
+        li $a2, 3 # len("$21")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 21 # valor numérico do registrador
+        li $a1, 3 # len("$21")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s6_token # token  a ser comparado
+        li $a2, 3 # len("$s6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 22 # valor numérico do registrador
+        li $a1, 3 # len("$s6")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _22_token # token a ser comparado
+        li $a2, 3 # len("$22")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 22 # valor numérico do registrador
+        li $a1, 3 # len("$22")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s7_token # token  a ser comparado
+        li $a2, 3 # len("$s7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 23 # valor numérico do registrador
+        li $a1, 3 # len("$s7")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _23_token # token a ser comparado
+        li $a2, 3 # len("$23")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 23 # valor numérico do registrador
+        li $a1, 3 # len("$23")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t8_token # token  a ser comparado
+        li $a2, 3 # len("$t8")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 24 # valor numérico do registrador
+        li $a1, 3 # len("$t8")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _24_token # token a ser comparado
+        li $a2, 3 # len("$24")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 24 # valor numérico do registrador
+        li $a1, 3 # len("$24")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t9_token # token  a ser comparado
+        li $a2, 3 # len("$t9")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 25 # valor numérico do registrador
+        li $a1, 3 # len("$t9")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _25_token     # Token a ser comparado ("$25")
+        li $a2, 3             # Tamanho do token "$25"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 25            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$25"
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _gp_token # token  a ser comparado
+        li $a2, 3 # len("$gp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 28 # valor numérico do registrador
+        li $a1, 3 # len("$gp")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _28_token     # Token a ser comparado ("$28")
+        li $a2, 3             # Tamanho do token "$28"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 28            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$28"
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _sp_token # token  a ser comparado
+        li $a2, 3 # len("$sp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 29 # valor numérico do registrador
+        li $a1, 3 # len("$sp")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _29_token     # Token a ser comparado ("$29")
+        li $a2, 3             # Tamanho do token "$29"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 29            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$29"
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _fp_token # token  a ser comparado
+        li $a2, 3 # len("$fp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 30 # valor numérico do registrador
+        li $a1, 3 # len("$fp")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _30_token     # Token a ser comparado ("$30")
+        li $a2, 3             # Tamanho do token "$30"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 30            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$30"
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _ra_token # token  a ser comparado
+        li $a2, 3 # len("$ra")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 31 # valor numérico do registrador
+        li $a1, 3 # len("$ra")
+        beq $v0, 1, aloca_argumento_tipo_r
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _31_token     # Token a ser comparado ("$31")
+        li $a2, 3             # Tamanho do token "$31"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 31            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$31"
+        beq $v0, 1, aloca_argumento_tipo_r
 
     _next_byte_tipo_r:
         addi $t0, $t0, 1
@@ -405,35 +1315,1383 @@ procura_argumentos_tipo_r:
         jr $ra # volta para process_instructions
 
 
-aloca_argumento:
+aloca_argumento_tipo_r:
     # recebe em $a0 o valor do argumento
     # recebe em $a1 o tamanho da str do argumento
     # $s0 tem o ponteiro do arg atual
-    beqz $t6, _aloca_rd
-    beq $t6, 1, _aloca_rs
-    beq $t6, 2, _aloca_rt
+    beqz $t6, _aloca_rd_tipo_r
+    beq $t6, 1, _aloca_rs_tipo_r
+    beq $t6, 2, _aloca_rt_tipo_r
     beq $t6, 3, invalid_instruction
 
-    _aloca_rd:
+    _aloca_rd_tipo_r:
         la $t0, rd_buffer
         sb $a0, 0($t0)
         add $s0, $s0, $a1
         move $t0, $s0
         j _loop_procura_args_tipo_r
 
-    _aloca_rs:
+    _aloca_rs_tipo_r:
         la $t0, rs_buffer
         sb $a0, 0($t0)
         add $s0, $s0, $a1
         move $t0, $s0
         j _loop_procura_args_tipo_r
 
-    _aloca_rt:
+    _aloca_rt_tipo_r:
         la $t0, rt_buffer
         sb $a0, 0($t0)
         add $s0, $s0, $a1
         move $t0, $s0
         j _loop_procura_args_tipo_r
+
+procura_argumentos_tipo_i_offset:
+    # recebe em $a0 o ponteiro para uma instrução
+    move $t0, $a0
+
+    add $t6, $zero, $zero # inicia o contador de argumentos
+    _loop_procura_args_tipo_i_offset:
+        lb $t1, 0($t0)
+        move $s0, $t0 # mantém o ponteiro do arg atual
+        
+        beqz $t1, _next_line_tipo_i_offset
+        beq $t1, '\r', _next_byte_tipo_i_offset
+        beq $t1, ' ', _next_byte_tipo_i_offset
+        beq $t1, '\n', _next_line_tipo_i_offset
+        beq $t1, '(', _next_byte_tipo_i_offset
+        beq $t1, ')', _next_byte_tipo_i_offset
+        beq $t1, ',', _next_arg_tipo_i_offset
+
+        
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _zero_token # token a ser comparado
+        li $a2, 5 # len("$zero")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 0 # valor numérico do registrador
+        li $a1, 5 # len("$zero")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _0_token # token a ser comparado
+        li $a2, 2 # len("$0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 0 # valor numérico do registrador
+        li $a1, 2 # len("$0")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _at_token # token a ser comparado
+        li $a2, 3 # len("$at")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 1 # valor numérico do registrador
+        li $a1, 3 # len("$at")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _1_token # token a ser comparado
+        li $a2, 2 # len("$1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 1 # valor numérico do registrador
+        li $a1, 2 # len("$1")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _v0_token # token  a ser comparado
+        li $a2, 3 # len("$v0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 2 # valor numérico do registrador
+        li $a1, 3 # len("$v0")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _2_token # token  a ser comparado
+        li $a2, 2 # len("$2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 2 # valor numérico do registrador
+        li $a1, 2 # len("$2")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _v1_token # token  a ser comparado
+        li $a2, 3 # len("$v1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 3 # valor numérico do registrador
+        li $a1, 3 # len("$v1")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _3_token # token a ser comparado
+        li $a2, 2 # len("$3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 3 # valor numérico do registrador
+        li $a1, 2 # len("$3")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a0_token # token  a ser comparado
+        li $a2, 3 # len("$a0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 4 # valor numérico do registrador
+        li $a1, 3 # len("$a0")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _4_token # token a ser comparado
+        li $a2, 2 # len("$4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 4 # valor numérico do registrador
+        li $a1, 2 # len("$4")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a1_token # token  a ser comparado
+        li $a2, 3 # len("$a1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 5 # valor numérico do registrador
+        li $a1, 3 # len("$a0")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _5_token # token a ser comparado
+        li $a2, 2 # len("$5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 5 # valor numérico do registrador
+        li $a1, 2 # len("$5")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a2_token # token  a ser comparado
+        li $a2, 3 # len("$a2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 6 # valor numérico do registrador
+        li $a1, 3 # len("$a2")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _6_token # token a ser comparado
+        li $a2, 2 # len("$6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 6 # valor numérico do registrador
+        li $a1, 2 # len("$6")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a3_token # token  a ser comparado
+        li $a2, 3 # len("$a3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 7 # valor numérico do registrador
+        li $a1, 3 # len("$a3")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _7_token # token a ser comparado
+        li $a2, 2 # len("$7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 7 # valor numérico do registrador
+        li $a1, 2 # len("$7")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t0_token # token  a ser comparado
+        li $a2, 3 # len("$t0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 8 # valor numérico do registrador
+        li $a1, 3 # len("$t0")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _8_token # token a ser comparado
+        li $a2, 2 # len("$8")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 8 # valor numérico do registrador
+        li $a1, 2 # len("$8")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t1_token # token  a ser comparado
+        li $a2, 3 # len("$t1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 9 # valor numérico do registrador
+        li $a1, 3 # len("$t1")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _9_token # token a ser comparado
+        li $a2, 2 # len("$9")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 9 # valor numérico do registrador
+        li $a1, 2 # len("$9")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t2_token # token  a ser comparado
+        li $a2, 3 # len("$t2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 10 # valor numérico do registrador
+        li $a1, 3 # len("$t2")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _10_token # token a ser comparado
+        li $a2, 3 # len("$10")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 10 # valor numérico do registrador
+        li $a1, 3 # len("$10")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t3_token # token  a ser comparado
+        li $a2, 3 # len("$t3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 11 # valor numérico do registrador
+        li $a1, 3 # len("$t3")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _11_token # token a ser comparado
+        li $a2, 3 # len("$11")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 11 # valor numérico do registrador
+        li $a1, 3 # len("$11")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t4_token # token  a ser comparado
+        li $a2, 3 # len("$t4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 12 # valor numérico do registrador
+        li $a1, 3 # len("$t4")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _12_token # token a ser comparado
+        li $a2, 3 # len("$12")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 12 # valor numérico do registrador
+        li $a1, 3 # len("$12")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t5_token # token  a ser comparado
+        li $a2, 3 # len("$t5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 13 # valor numérico do registrador
+        li $a1, 3 # len("$t5")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _13_token # token a ser comparado
+        li $a2, 3 # len("$13")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 13 # valor numérico do registrador
+        li $a1, 3 # len("$13")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t6_token # token  a ser comparado
+        li $a2, 3 # len("$t6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 14 # valor numérico do registrador
+        li $a1, 3 # len("$t6")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _14_token # token a ser comparado
+        li $a2, 3 # len("$14")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 14 # valor numérico do registrador
+        li $a1, 3 # len("$14")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t7_token # token  a ser comparado
+        li $a2, 3 # len("$t7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 15 # valor numérico do registrador
+        li $a1, 3 # len("$t7")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _15_token # token a ser comparado
+        li $a2, 3 # len("$15")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 15 # valor numérico do registrador
+        li $a1, 3 # len("$15")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s0_token # token  a ser comparado
+        li $a2, 3 # len("$s0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 16 # valor numérico do registrador
+        li $a1, 3 # len("$s0")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _16_token # token a ser comparado
+        li $a2, 3 # len("$16")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 16 # valor numérico do registrador
+        li $a1, 3 # len("$16")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s1_token # token  a ser comparado
+        li $a2, 3 # len("$s1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 17 # valor numérico do registrador
+        li $a1, 3 # len("$s1")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _17_token # token a ser comparado
+        li $a2, 3 # len("$17")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 17 # valor numérico do registrador
+        li $a1, 3 # len("$17")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s2_token # token  a ser comparado
+        li $a2, 3 # len("$s2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 18 # valor numérico do registrador
+        li $a1, 3 # len("$s2")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _18_token # token a ser comparado
+        li $a2, 3 # len("$18")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 18 # valor numérico do registrador
+        li $a1, 3 # len("$18")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s3_token # token  a ser comparado
+        li $a2, 3 # len("$s3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 19 # valor numérico do registrador
+        li $a1, 3 # len("$s3")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _19_token # token a ser comparado
+        li $a2, 3 # len("$19")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 19 # valor numérico do registrador
+        li $a1, 3 # len("$19")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s4_token # token  a ser comparado
+        li $a2, 3 # len("$s4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 20 # valor numérico do registrador
+        li $a1, 3 # len("$s4")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _20_token # token a ser comparado
+        li $a2, 3 # len("$20")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 20 # valor numérico do registrador
+        li $a1, 3 # len("$20")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s5_token # token  a ser comparado
+        li $a2, 3 # len("$s5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 21 # valor numérico do registrador
+        li $a1, 3 # len("$s5")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _21_token # token a ser comparado
+        li $a2, 3 # len("$21")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 21 # valor numérico do registrador
+        li $a1, 3 # len("$21")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s6_token # token  a ser comparado
+        li $a2, 3 # len("$s6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 22 # valor numérico do registrador
+        li $a1, 3 # len("$s6")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _22_token # token a ser comparado
+        li $a2, 3 # len("$22")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 22 # valor numérico do registrador
+        li $a1, 3 # len("$22")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s7_token # token  a ser comparado
+        li $a2, 3 # len("$s7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 23 # valor numérico do registrador
+        li $a1, 3 # len("$s7")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _23_token # token a ser comparado
+        li $a2, 3 # len("$23")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 23 # valor numérico do registrador
+        li $a1, 3 # len("$23")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t8_token # token  a ser comparado
+        li $a2, 3 # len("$t8")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 24 # valor numérico do registrador
+        li $a1, 3 # len("$t8")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _24_token # token a ser comparado
+        li $a2, 3 # len("$24")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 24 # valor numérico do registrador
+        li $a1, 3 # len("$24")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t9_token # token  a ser comparado
+        li $a2, 3 # len("$t9")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 25 # valor numérico do registrador
+        li $a1, 3 # len("$t9")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _25_token     # Token a ser comparado ("$25")
+        li $a2, 3             # Tamanho do token "$25"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 25            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$25"
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _gp_token # token  a ser comparado
+        li $a2, 3 # len("$gp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 28 # valor numérico do registrador
+        li $a1, 3 # len("$gp")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _28_token     # Token a ser comparado ("$28")
+        li $a2, 3             # Tamanho do token "$28"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 28            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$28"
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _sp_token # token  a ser comparado
+        li $a2, 3 # len("$sp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 29 # valor numérico do registrador
+        li $a1, 3 # len("$sp")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _29_token     # Token a ser comparado ("$29")
+        li $a2, 3             # Tamanho do token "$29"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 29            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$29"
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _fp_token # token  a ser comparado
+        li $a2, 3 # len("$fp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 30 # valor numérico do registrador
+        li $a1, 3 # len("$fp")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _30_token     # Token a ser comparado ("$30")
+        li $a2, 3             # Tamanho do token "$30"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 30            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$30"
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _ra_token # token  a ser comparado
+        li $a2, 3 # len("$ra")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 31 # valor numérico do registrador
+        li $a1, 3 # len("$ra")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _31_token     # Token a ser comparado ("$31")
+        li $a2, 3             # Tamanho do token "$31"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 31            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$31"
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+    
+        bne $t6, 1, invalid_instruction # Se o IMM estiver em local errado a instrução está inválida
+
+        lb $t0, 0($s0) #verifica se o número é do formato -1
+        beq $t0, '-', _verifica_sinal_tipo_i_offset
+        lb $t0, 1($s0)
+        beq $t0, 'x', _imm_hexadecimal_tipo_i_offset # passou por esses dois testes -> converte ascii to decimal -> aloca no buffer
+
+        move $a0, $s0
+        jal ascii_to_decimal
+
+        add $a0, $zero, $v0 # valor da str de decimal
+        add $a1, $zero, $v1 # len da str de algarismo 
+        addi $a1, $a1, 1
+        j aloca_argumento_tipo_i_offset
+
+        _imm_hexadecimal_tipo_i_offset:
+            addi $s0, $s0, 2
+            move $a0, $s0
+            jal ascii_hex_to_decimal
+
+            add $a0, $zero, $v0 # valor da str de hexadecimal
+            add $a1, $zero, $v1 # len da str de algarismo
+            addi $a1, $a1, 1
+            j aloca_argumento_tipo_i_offset
+        
+        _verifica_sinal_tipo_i_offset:
+            addi $s0, $s0, 1
+            move $a0, $s0
+            jal ascii_to_decimal
+
+            sub $a0, $zero, $v0
+            add $a1, $zero, $v1
+            addi $a1, $a1, 1
+            j aloca_argumento_tipo_i_offset
+
+        li $a2, 5 # len("$at")
+        jal compara_str # a0 é preservado nas comparações
+        add $a0, $zero, $zero
+        li $a1, 5 # len("$at")
+        beq $v0, 1, aloca_argumento_tipo_i_offset
+
+    _next_byte_tipo_i_offset:
+        addi $t0, $t0, 1
+        j _loop_procura_args_tipo_i_offset
+
+    _next_line_tipo_i_offset:
+        # gera linha de código de máquina e depois vai para o fim
+        addi $t0, $t0, 1
+        move $s0, $t0 # buffer atual do arquivo orginal
+
+        add $t2, $zero, $zero
+
+        la $t1, opcode_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 26
+
+        addu $t2, $t2, $t3
+
+        la $t1, rs_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 21
+        addu $t2, $t2, $t3
+
+        la $t1, rt_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 16
+        addu $t2, $t2, $t3
+
+        la $t1, imm_buffer
+        lb $t3, 0($t1)
+
+        addu $t2, $t2, $t3
+
+        # Fecha a instrução com tudo
+
+        move $a0, $t2 # recebe o valor em decimal da instrução
+        la $a1, instruction_buffer # mantém em instruction_buffer
+        jal decimal_to_hex_ascii
+
+        move $a0, $s1
+        la $a1, text_mif_linha
+        jal decimal_to_hex_ascii # text_mif_linha já vai ter o endereço de memória
+        
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, ':'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        la $a0, instruction_buffer
+        move $a1, $t0 # endereço do buffer data_mif_linha atual
+        li $a2, 8
+        jal aloca_str 
+
+        move $t0, $a1
+
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, ';'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, '\n'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        la $a0, text_mif_linha
+        move $a1, $s5
+        li $a2, 22
+        jal aloca_str
+
+        li $t1, ' '
+        sb $t1, ($a1)
+        addi $a1, $a1, 1
+
+        move $s5, $a1 # aponta para o último endereço de text_mif
+        addi $s1, $s1, 1
+        move $a0, $s0
+        j process_instructions_switch_case
+
+    _next_arg_tipo_i_offset:
+        # adiciona no num de args
+        addi $t6, $t6, 1
+        addi $t0, $t0, 1
+        j _loop_procura_args_tipo_i_offset
+        
+
+    _fim_procura_args_tipo_i_offset:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra # volta para process_instructions
+
+
+aloca_argumento_tipo_i_offset:
+    # recebe em $a0 o valor do argumento
+    # recebe em $a1 o tamanho da str do argumento
+    # $s0 tem o ponteiro do arg atual
+    beqz $t6, _aloca_rt_tipo_i_offset
+    beq $t6, 1, _aloca_imm_tipo_i_offset
+    beq $t6, 2, _aloca_rs_tipo_i_offset
+    beq $t6, 3, invalid_instruction
+
+    _aloca_rt_tipo_i_offset:
+        la $t0, rt_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        j _loop_procura_args_tipo_i_offset
+
+    _aloca_rs_tipo_i_offset:
+        la $t0, rs_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        j _loop_procura_args_tipo_i_offset
+
+    _aloca_imm_tipo_i_offset:
+        la $t0, imm_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        addi $t6, $t6, 1
+        j _loop_procura_args_tipo_i_offset
+
+procura_argumentos_tipo_i:
+    # recebe em $a0 o ponteiro para uma instrução
+    move $t0, $a0
+
+    add $t6, $zero, $zero # inicia o contador de argumentos
+    _loop_procura_args_tipo_i:
+        lb $t1, 0($t0)
+        move $s0, $t0 # mantém o ponteiro do arg atual
+        
+        beqz $t1, _next_line_tipo_i
+        beq $t1, '\r', _next_byte_tipo_i
+        beq $t1, ' ', _next_byte_tipo_i
+        beq $t1, '\n', _next_line_tipo_i
+        beq $t1, '(', _next_byte_tipo_i
+        beq $t1, ')', _next_byte_tipo_i
+        beq $t1, ',', _next_arg_tipo_i
+
+        
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _zero_token # token a ser comparado
+        li $a2, 5 # len("$zero")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 0 # valor numérico do registrador
+        li $a1, 5 # len("$zero")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _0_token # token a ser comparado
+        li $a2, 2 # len("$0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 0 # valor numérico do registrador
+        li $a1, 2 # len("$0")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _at_token # token a ser comparado
+        li $a2, 3 # len("$at")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 1 # valor numérico do registrador
+        li $a1, 3 # len("$at")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _1_token # token a ser comparado
+        li $a2, 2 # len("$1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 1 # valor numérico do registrador
+        li $a1, 2 # len("$1")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _v0_token # token  a ser comparado
+        li $a2, 3 # len("$v0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 2 # valor numérico do registrador
+        li $a1, 3 # len("$v0")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _2_token # token  a ser comparado
+        li $a2, 2 # len("$2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 2 # valor numérico do registrador
+        li $a1, 2 # len("$2")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _v1_token # token  a ser comparado
+        li $a2, 3 # len("$v1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 3 # valor numérico do registrador
+        li $a1, 3 # len("$v1")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _3_token # token a ser comparado
+        li $a2, 2 # len("$3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 3 # valor numérico do registrador
+        li $a1, 2 # len("$3")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a0_token # token  a ser comparado
+        li $a2, 3 # len("$a0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 4 # valor numérico do registrador
+        li $a1, 3 # len("$a0")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _4_token # token a ser comparado
+        li $a2, 2 # len("$4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 4 # valor numérico do registrador
+        li $a1, 2 # len("$4")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a1_token # token  a ser comparado
+        li $a2, 3 # len("$a1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 5 # valor numérico do registrador
+        li $a1, 3 # len("$a0")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _5_token # token a ser comparado
+        li $a2, 2 # len("$5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 5 # valor numérico do registrador
+        li $a1, 2 # len("$5")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a2_token # token  a ser comparado
+        li $a2, 3 # len("$a2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 6 # valor numérico do registrador
+        li $a1, 3 # len("$a2")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _6_token # token a ser comparado
+        li $a2, 2 # len("$6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 6 # valor numérico do registrador
+        li $a1, 2 # len("$6")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _a3_token # token  a ser comparado
+        li $a2, 3 # len("$a3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 7 # valor numérico do registrador
+        li $a1, 3 # len("$a3")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _7_token # token a ser comparado
+        li $a2, 2 # len("$7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 7 # valor numérico do registrador
+        li $a1, 2 # len("$7")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t0_token # token  a ser comparado
+        li $a2, 3 # len("$t0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 8 # valor numérico do registrador
+        li $a1, 3 # len("$t0")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _8_token # token a ser comparado
+        li $a2, 2 # len("$8")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 8 # valor numérico do registrador
+        li $a1, 2 # len("$8")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t1_token # token  a ser comparado
+        li $a2, 3 # len("$t1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 9 # valor numérico do registrador
+        li $a1, 3 # len("$t1")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _9_token # token a ser comparado
+        li $a2, 2 # len("$9")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 9 # valor numérico do registrador
+        li $a1, 2 # len("$9")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t2_token # token  a ser comparado
+        li $a2, 3 # len("$t2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 10 # valor numérico do registrador
+        li $a1, 3 # len("$t2")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _10_token # token a ser comparado
+        li $a2, 3 # len("$10")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 10 # valor numérico do registrador
+        li $a1, 3 # len("$10")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t3_token # token  a ser comparado
+        li $a2, 3 # len("$t3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 11 # valor numérico do registrador
+        li $a1, 3 # len("$t3")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _11_token # token a ser comparado
+        li $a2, 3 # len("$11")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 11 # valor numérico do registrador
+        li $a1, 3 # len("$11")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t4_token # token  a ser comparado
+        li $a2, 3 # len("$t4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 12 # valor numérico do registrador
+        li $a1, 3 # len("$t4")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _12_token # token a ser comparado
+        li $a2, 3 # len("$12")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 12 # valor numérico do registrador
+        li $a1, 3 # len("$12")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t5_token # token  a ser comparado
+        li $a2, 3 # len("$t5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 13 # valor numérico do registrador
+        li $a1, 3 # len("$t5")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _13_token # token a ser comparado
+        li $a2, 3 # len("$13")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 13 # valor numérico do registrador
+        li $a1, 3 # len("$13")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t6_token # token  a ser comparado
+        li $a2, 3 # len("$t6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 14 # valor numérico do registrador
+        li $a1, 3 # len("$t6")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _14_token # token a ser comparado
+        li $a2, 3 # len("$14")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 14 # valor numérico do registrador
+        li $a1, 3 # len("$14")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t7_token # token  a ser comparado
+        li $a2, 3 # len("$t7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 15 # valor numérico do registrador
+        li $a1, 3 # len("$t7")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _15_token # token a ser comparado
+        li $a2, 3 # len("$15")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 15 # valor numérico do registrador
+        li $a1, 3 # len("$15")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s0_token # token  a ser comparado
+        li $a2, 3 # len("$s0")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 16 # valor numérico do registrador
+        li $a1, 3 # len("$s0")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _16_token # token a ser comparado
+        li $a2, 3 # len("$16")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 16 # valor numérico do registrador
+        li $a1, 3 # len("$16")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s1_token # token  a ser comparado
+        li $a2, 3 # len("$s1")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 17 # valor numérico do registrador
+        li $a1, 3 # len("$s1")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _17_token # token a ser comparado
+        li $a2, 3 # len("$17")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 17 # valor numérico do registrador
+        li $a1, 3 # len("$17")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s2_token # token  a ser comparado
+        li $a2, 3 # len("$s2")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 18 # valor numérico do registrador
+        li $a1, 3 # len("$s2")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _18_token # token a ser comparado
+        li $a2, 3 # len("$18")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 18 # valor numérico do registrador
+        li $a1, 3 # len("$18")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s3_token # token  a ser comparado
+        li $a2, 3 # len("$s3")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 19 # valor numérico do registrador
+        li $a1, 3 # len("$s3")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _19_token # token a ser comparado
+        li $a2, 3 # len("$19")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 19 # valor numérico do registrador
+        li $a1, 3 # len("$19")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s4_token # token  a ser comparado
+        li $a2, 3 # len("$s4")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 20 # valor numérico do registrador
+        li $a1, 3 # len("$s4")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _20_token # token a ser comparado
+        li $a2, 3 # len("$20")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 20 # valor numérico do registrador
+        li $a1, 3 # len("$20")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s5_token # token  a ser comparado
+        li $a2, 3 # len("$s5")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 21 # valor numérico do registrador
+        li $a1, 3 # len("$s5")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _21_token # token a ser comparado
+        li $a2, 3 # len("$21")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 21 # valor numérico do registrador
+        li $a1, 3 # len("$21")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s6_token # token  a ser comparado
+        li $a2, 3 # len("$s6")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 22 # valor numérico do registrador
+        li $a1, 3 # len("$s6")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _22_token # token a ser comparado
+        li $a2, 3 # len("$22")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 22 # valor numérico do registrador
+        li $a1, 3 # len("$22")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _s7_token # token  a ser comparado
+        li $a2, 3 # len("$s7")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 23 # valor numérico do registrador
+        li $a1, 3 # len("$s7")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _23_token # token a ser comparado
+        li $a2, 3 # len("$23")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 23 # valor numérico do registrador
+        li $a1, 3 # len("$23")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t8_token # token  a ser comparado
+        li $a2, 3 # len("$t8")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 24 # valor numérico do registrador
+        li $a1, 3 # len("$t8")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento 
+        la $a1, _24_token # token a ser comparado
+        li $a2, 3 # len("$24")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 24 # valor numérico do registrador
+        li $a1, 3 # len("$24")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _t9_token # token  a ser comparado
+        li $a2, 3 # len("$t9")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 25 # valor numérico do registrador
+        li $a1, 3 # len("$t9")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _25_token     # Token a ser comparado ("$25")
+        li $a2, 3             # Tamanho do token "$25"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 25            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$25"
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _gp_token # token  a ser comparado
+        li $a2, 3 # len("$gp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 28 # valor numérico do registrador
+        li $a1, 3 # len("$gp")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _28_token     # Token a ser comparado ("$28")
+        li $a2, 3             # Tamanho do token "$28"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 28            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$28"
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _sp_token # token  a ser comparado
+        li $a2, 3 # len("$sp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 29 # valor numérico do registrador
+        li $a1, 3 # len("$sp")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _29_token     # Token a ser comparado ("$29")
+        li $a2, 3             # Tamanho do token "$29"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 29            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$29"
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _fp_token # token  a ser comparado
+        li $a2, 3 # len("$fp")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 30 # valor numérico do registrador
+        li $a1, 3 # len("$fp")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _30_token     # Token a ser comparado ("$30")
+        li $a2, 3             # Tamanho do token "$30"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 30            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$30"
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0 # reseta o endereço do argumento
+        la $a1, _ra_token # token  a ser comparado
+        li $a2, 3 # len("$ra")
+        jal compara_str # a0 é preservado nas comparações
+        li $a0, 31 # valor numérico do registrador
+        li $a1, 3 # len("$ra")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+        move $a0, $s0         # Reseta o endereço do argumento 
+        la $a1, _31_token     # Token a ser comparado ("$31")
+        li $a2, 3             # Tamanho do token "$31"
+        jal compara_str       # Chama a função de comparação de strings
+        li $a0, 31            # Valor numérico do registrador
+        li $a1, 3             # Tamanho do token "$31"
+        beq $v0, 1, aloca_argumento_tipo_i
+
+    
+        bne $t6, 2, invalid_instruction # Se o IMM estiver em local errado a instrução está inválida
+
+        lb $t0, 0($s0) #verifica se o número é do formato -1
+        beq $t0, '-', _verifica_sinal_tipo_i
+        lb $t0, 1($s0)
+        beq $t0, 'x', _imm_hexadecimal_tipo_i # passou por esses dois testes -> converte ascii to decimal -> aloca no buffer
+
+        move $a0, $s0
+        jal ascii_to_decimal
+
+        add $a0, $zero, $v0 # valor da str de decimal
+        add $a1, $zero, $v1 # len da str de algarismo 
+        addi $a1, $a1, 1
+        j aloca_argumento_tipo_i
+
+        _imm_hexadecimal_tipo_i:
+            addi $s0, $s0, 2
+            move $a0, $s0
+            jal ascii_hex_to_decimal
+
+            add $a0, $zero, $v0 # valor da str de hexadecimal
+            add $a1, $zero, $v1 # len da str de algarismo
+            addi $a1, $a1, 1
+            j aloca_argumento_tipo_i
+        
+        _verifica_sinal_tipo_i:
+            addi $s0, $s0, 1
+            move $a0, $s0
+            jal ascii_to_decimal
+
+            sub $a0, $zero, $v0
+            add $a1, $zero, $v1
+            addi $a1, $a1, 1
+            j aloca_argumento_tipo_i
+
+        li $a2, 5 # len("$at")
+        jal compara_str # a0 é preservado nas comparações
+        add $a0, $zero, $zero
+        li $a1, 5 # len("$at")
+        beq $v0, 1, aloca_argumento_tipo_i
+
+    _next_byte_tipo_i:
+        addi $t0, $t0, 1
+        j _loop_procura_args_tipo_i
+
+    _next_line_tipo_i:
+        # gera linha de código de máquina e depois vai para o fim
+        addi $t0, $t0, 1
+        move $s0, $t0 # buffer atual do arquivo orginal
+
+        add $t2, $zero, $zero
+
+        la $t1, opcode_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 26
+
+        addu $t2, $t2, $t3
+
+        la $t1, rs_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 21
+        addu $t2, $t2, $t3
+
+        la $t1, rt_buffer
+        lb $t3, 0($t1)
+
+        sll $t3, $t3, 16
+        addu $t2, $t2, $t3
+
+        la $t1, imm_buffer
+        lb $t3, 0($t1)
+
+        addu $t2, $t2, $t3
+
+        # Fecha a instrução com tudo
+
+        move $a0, $t2 # recebe o valor em decimal da instrução
+        la $a1, instruction_buffer # mantém em instruction_buffer
+        jal decimal_to_hex_ascii
+
+        move $a0, $s1
+        la $a1, text_mif_linha
+        jal decimal_to_hex_ascii # text_mif_linha já vai ter o endereço de memória
+        
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, ':'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        la $a0, instruction_buffer
+        move $a1, $t0 # endereço do buffer data_mif_linha atual
+        li $a2, 8
+        jal aloca_str 
+
+        move $t0, $a1
+
+        li $t1, ' '
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, ';'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+
+        li $t1, '\n'
+        sb $t1, ($t0)
+        addi $t0, $t0, 1
+        
+        la $a0, text_mif_linha
+        move $a1, $s5
+        li $a2, 22
+        jal aloca_str
+
+        li $t1, ' '
+        sb $t1, ($a1)
+        addi $a1, $a1, 1
+
+        move $s5, $a1 # aponta para o último endereço de text_mif
+        addi $s1, $s1, 1
+        move $a0, $s0
+        j process_instructions_switch_case
+
+    _next_arg_tipo_i:
+        # adiciona no num de args
+        addi $t6, $t6, 1
+        addi $t0, $t0, 1
+        j _loop_procura_args_tipo_i
+        
+
+    _fim_procura_args_tipo_i:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra # volta para process_instructions
+
+aloca_argumento_tipo_i:
+    # recebe em $a0 o valor do argumento
+    # recebe em $a1 o tamanho da str do argumento
+    # $s0 tem o ponteiro do arg atual
+    beqz $t6, _aloca_rt_tipo_i
+    beq $t6, 1, _aloca_rs_tipo_i
+    beq $t6, 2, _aloca_imm_tipo_i
+    beq $t6, 3, invalid_instruction
+
+    _aloca_rt_tipo_i:
+        la $t0, rt_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        j _loop_procura_args_tipo_i
+
+    _aloca_rs_tipo_i:
+        la $t0, rs_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        j _loop_procura_args_tipo_i
+
+    _aloca_imm_tipo_i:
+        la $t0, imm_buffer
+        sb $a0, 0($t0)
+        add $s0, $s0, $a1
+        move $t0, $s0
+        addi $t6, $t6, 1
+        j _loop_procura_args_tipo_i
+
 
 invalid_instruction:
     # Lança exceção de instrução inexistente e descarta arquivo
@@ -798,23 +3056,29 @@ ascii_to_decimal:
     # Recebe o endereço da string em $a0
     add $v0, $zero, $zero
     move $t0, $a0          # ponteiro da string
-
+    add $t4, $zero, $zero # contador do tamanho 
     _convert_loop:
 
         lb $t1, 0($t0) # carrega byte
         beqz $t1, _convert_end # se zero vai pro final
 
-        subi $t1, $t1, 48 # converte o ASCII para número           
-        
         li $t2, 10
         mult $v0, $t2 # multiplica por 10
         mflo $v0
+
+        beq $t1, '(', _convert_end
+        beq $t1, ' ',_convert_end
+        beq $t1, ')', _convert_end
+
+        subi $t1, $t1, 48 # converte o ASCII para número           
         
         add $v0, $v0, $t1 # adiciona novo dígito
         addi $t0, $t0, -1 # e continua o loop
+        addi $t4, $t4, 1 # incrementa o contador
         j _convert_loop
         
     _convert_end:
+        move $v1, $t4 # retorna o tamanho da str de decimal
         jr $ra
 
 decimal_to_hex_ascii:
@@ -857,6 +3121,7 @@ ascii_hex_to_decimal:
     
     add $v0, $zero, $zero            # Initialize result
     move $s0, $a0          # Salva o endereço
+    li $t4, 0          # Inicializa o contador de dígitos
     
     _ascii_convert_loop:
         lb $t0, ($s0)          
@@ -889,6 +3154,7 @@ ascii_hex_to_decimal:
             sll $v0, $v0, 4        # move pra esquerda
             add $v0, $v0, $t2      # adiciona o novo dígito
             addi $s0, $s0, 1 # continua a conversão
+            addi $t4, $t4, 1 # dígito
             j _ascii_convert_loop
 
         _invalido: # se for um dígito inválido printa mensagem de erro
@@ -901,6 +3167,7 @@ ascii_hex_to_decimal:
         lw $s0, 0($sp)         # desempilha 
         lw $ra, 4($sp)
         addi $sp, $sp, 8
+        move $v1, $t4 # retorna o tamanho da string
         jr $ra
 
 aloca_str:
