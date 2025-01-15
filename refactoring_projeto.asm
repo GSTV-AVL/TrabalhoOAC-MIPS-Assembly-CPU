@@ -378,6 +378,18 @@ process_instructions:
             move $a2, $s6
             jal compara_str
             beq $v0, 1, _instrucao_addi
+
+            la $a1, _andi_token
+            li $s6, 5 # tamanho do token
+            move $a2, $s6
+            jal compara_str
+            beq $v0, 1, _instrucao_addi
+
+            la $a1, _ori_token
+            li $s6, 4 # tamanho do token
+            move $a2, $s6
+            jal compara_str
+            beq $v0, 1, _instrucao_addi
         
         _tipo_i_beq:
 
@@ -387,6 +399,12 @@ process_instructions:
             jal compara_str
             beq $v0, 1, _instrucao_beq
 
+            la $a1, _bne_token
+            li $s6, 4 # tamanho do token
+            move $a2, $s6
+            jal compara_str
+            beq $v0, 1, _instrucao_bne
+
 
         j invalid_instruction
 
@@ -394,6 +412,30 @@ process_instructions:
                 add $a0, $a0, $s6 # anda o tamanho de add
                 la $t1, opcode_buffer
                 li $t0, 8 # carrega o opcode de addi
+                sb $t0, 0($t1) # salva o opcode
+
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
+                j procura_argumentos_tipo_i
+            
+            _instrucao_ori:
+                add $a0, $a0, $s6 # anda o tamanho de add
+                la $t1, opcode_buffer
+                li $t0, 13 # carrega o opcode de addi
+                sb $t0, 0($t1) # salva o opcode
+
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
+                j procura_argumentos_tipo_i
+            
+            _instrucao_andi:
+                add $a0, $a0, $s6 # anda o tamanho de add
+                la $t1, opcode_buffer
+                li $t0, 12 # carrega o opcode de addi
                 sb $t0, 0($t1) # salva o opcode
 
                 move $a1, $zero # prepara o local em que começará a alocação de argumentos
@@ -862,6 +904,18 @@ process_instructions:
                 add $a0, $a0, $s6 # anda o tamanho de beq
                 la $t1, opcode_buffer
                 li $t0, 4
+                sb $t0, 0($t1) # salva o opcode (0 para tipo R)
+                
+                move $a1, $zero # prepara o local em que começará a alocação de argumentos
+                                # RD = 0
+                                # RS = 1
+                                # RT = 2
+                j procura_argumentos_tipo_i_beq
+
+            _instrucao_bne:
+                add $a0, $a0, $s6 # anda o tamanho de beq
+                la $t1, opcode_buffer
+                li $t0, 5
                 sb $t0, 0($t1) # salva o opcode (0 para tipo R)
                 
                 move $a1, $zero # prepara o local em que começará a alocação de argumentos
@@ -2252,7 +2306,7 @@ procura_argumentos_tipo_i:
     _loop_procura_args_tipo_i:
         lb $t1, 0($t0)
         move $s0, $t0 # mantém o ponteiro do arg atual
-        
+
         beqz $t1, _next_line_tipo_i
         beq $t1, '\r', _next_byte_tipo_i
         beq $t1, ' ', _next_byte_tipo_i
